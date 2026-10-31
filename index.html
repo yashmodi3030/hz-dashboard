@@ -1,0 +1,965 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Repo Dashboard</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f4f4f2;
+  --surface-1: #fcfcfb;
+  --surface-2: #f0efec;
+  --border: #e2e1dc;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #7a7974;
+  --accent: #2a78d6;
+  --accent-ink: #1c5cab;
+  --accent-soft: #cde2fb;
+  --series-1: #2a78d6;
+  --grid: #e8e7e3;
+  --critical: #d03b3b;
+  --good-ink: #006300;
+  --good-soft: #dff3df;
+  --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #111110;
+    --surface-1: #1a1a19;
+    --surface-2: #232321;
+    --border: #2f2f2c;
+    --text-primary: #f0efec;
+    --text-secondary: #c3c2b7;
+    --text-muted: #8f8e86;
+    --accent: #3987e5;
+    --accent-ink: #86b6ef;
+    --accent-soft: #184f95;
+    --series-1: #3987e5;
+    --grid: #2a2a28;
+    --critical: #e66767;
+    --good-ink: #7fd67f;
+    --good-soft: #1d3a1d;
+    --shadow: none;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #111110;
+  --surface-1: #1a1a19;
+  --surface-2: #232321;
+  --border: #2f2f2c;
+  --text-primary: #f0efec;
+  --text-secondary: #c3c2b7;
+  --text-muted: #8f8e86;
+  --accent: #3987e5;
+  --accent-ink: #86b6ef;
+  --accent-soft: #184f95;
+  --series-1: #3987e5;
+  --grid: #2a2a28;
+  --critical: #e66767;
+  --good-ink: #7fd67f;
+  --good-soft: #1d3a1d;
+  --shadow: none;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font: 14px/1.45 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select { font: inherit; color: inherit; }
+a { color: var(--accent-ink); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.hidden { display: none !important; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* Login */
+#login {
+  min-height: 100vh; display: grid; place-items: center; padding: 24px 16px;
+}
+.login-card {
+  width: 100%; max-width: 360px; background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 14px; padding: 28px 24px; box-shadow: var(--shadow);
+}
+.login-card h1 { font-size: 20px; margin: 0 0 4px; letter-spacing: -.01em; }
+.login-card p { margin: 0 0 20px; color: var(--text-secondary); }
+.field { display: grid; gap: 6px; margin-bottom: 14px; }
+.field label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+.input {
+  height: 38px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface-1); outline: none; width: 100%;
+}
+.input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+.btn {
+  height: 38px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface-1); cursor: pointer; font-weight: 500; white-space: nowrap;
+}
+.btn:hover { background: var(--surface-2); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; width: 100%; }
+.btn-primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
+.btn-primary:disabled { opacity: .7; cursor: progress; }
+.error { color: var(--critical); font-size: 13px; min-height: 18px; margin: 4px 0 10px; }
+
+/* App */
+.wrap { max-width: 1280px; margin: 0 auto; padding: 0 16px 48px; }
+header.top {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 20px 0 16px;
+}
+header.top h1 { font-size: 20px; margin: 0; letter-spacing: -.01em; }
+.sub { color: var(--text-secondary); font-size: 13px; margin-top: 2px; }
+.top-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--good-ink); margin-right: 6px; vertical-align: 1px; }
+.dot.stale { background: var(--critical); }
+
+.kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+.card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); min-width: 0; }
+.kpi { padding: 14px 16px; }
+.kpi .label { color: var(--text-secondary); font-size: 12.5px; font-weight: 500; }
+.kpi .value { font-size: 28px; font-weight: 650; letter-spacing: -.02em; margin-top: 2px; }
+.kpi .hint { color: var(--text-muted); font-size: 12px; }
+
+.charts { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.card-h { padding: 14px 16px 0; }
+.card-h h2 { font-size: 14px; margin: 0; font-weight: 600; }
+.card-h .sub { margin-top: 2px; }
+.chart { padding: 8px 16px 14px; position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { fill: var(--text-muted); font-size: 11px; }
+.chart .bar { fill: var(--series-1); }
+.chart .hit:hover + .bar, .chart .bar.active { fill: var(--accent-ink); }
+.chart .gridline { stroke: var(--grid); stroke-width: 1; }
+.chart .baseline { stroke: var(--border); stroke-width: 1; }
+.hbars { display: grid; gap: 8px; padding: 12px 16px 16px; }
+.hbar { display: grid; grid-template-columns: minmax(70px, 34%) 1fr 36px; align-items: center; gap: 8px; font-size: 12.5px; }
+.hbar .name { color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hbar .track { height: 10px; }
+.hbar .fill { height: 10px; background: var(--series-1); border-radius: 0 4px 4px 0; min-width: 2px; }
+.hbar .val { text-align: right; color: var(--text-primary); }
+.hbar:hover .fill { background: var(--accent-ink); }
+.empty { color: var(--text-muted); padding: 24px 16px; text-align: center; }
+
+.tooltip {
+  position: fixed; pointer-events: none; z-index: 10; background: var(--text-primary); color: var(--surface-1);
+  padding: 6px 9px; border-radius: 6px; font-size: 12px; white-space: nowrap; transform: translate(-50%, calc(-100% - 10px));
+}
+
+.filters { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 16px; border-bottom: 1px solid var(--border); align-items: center; }
+.filters .input, .filters select.input { width: auto; height: 34px; }
+.filters .search { flex: 1 1 220px; min-width: 0; }
+.filters label.chk { display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 13px; }
+.filters .btn { height: 34px; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: var(--surface-1); padding: 0 12px; height: 32px; cursor: pointer; color: var(--text-secondary); }
+.seg button + button { border-left: 1px solid var(--border); }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--text-primary); font-weight: 600; }
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+#tbody-table { min-width: 1080px; }
+.row-actions { display: flex; gap: 6px; }
+.btn-sm { height: 28px; padding: 0 10px; font-size: 12.5px; border-radius: 7px; }
+.btn-accent { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-accent:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
+
+/* Clone menu */
+.menu {
+  position: fixed; z-index: 30; min-width: 240px; background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 10px; box-shadow: 0 8px 28px rgba(0,0,0,.18); padding: 6px;
+}
+.menu button, .menu a {
+  display: block; width: 100%; text-align: left; padding: 8px 10px; border-radius: 7px; border: 0;
+  background: none; cursor: pointer; color: var(--text-primary); font-size: 13px; text-decoration: none;
+}
+.menu button:hover, .menu a:hover { background: var(--surface-2); text-decoration: none; }
+.menu .hint { display: block; color: var(--text-muted); font-size: 11.5px; }
+.menu code { display: block; font-size: 11.5px; color: var(--text-secondary); padding: 6px 10px 4px; word-break: break-all; }
+
+/* Preview drawer */
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 20; }
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; width: min(760px, 100vw); z-index: 21; background: var(--surface-1);
+  border-left: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: -8px 0 32px rgba(0,0,0,.2);
+}
+.drawer-h { padding: 16px; border-bottom: 1px solid var(--border); display: grid; gap: 8px; }
+.drawer-h .row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.drawer-h h3 { margin: 0; font-size: 17px; word-break: break-word; }
+.drawer-h .meta { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 12.5px; }
+.drawer-h .acts { display: flex; flex-wrap: wrap; gap: 8px; }
+.drawer-body { flex: 1; min-height: 0; position: relative; }
+.drawer-body iframe { border: 0; width: 100%; height: 100%; display: block; background: var(--surface-1); }
+.drawer-body .empty { position: absolute; inset: 0; display: grid; place-items: center; }
+/* Tabs */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+.tabs button {
+  border: 0; background: none; padding: 10px 14px; cursor: pointer; color: var(--text-secondary);
+  font-weight: 500; border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.tabs button:hover { color: var(--text-primary); }
+.tabs button[aria-selected="true"] { color: var(--text-primary); border-bottom-color: var(--accent); font-weight: 600; }
+.tabs .count { color: var(--text-muted); font-weight: 400; margin-left: 4px; }
+
+/* Crawls */
+#crawls-table { min-width: 980px; }
+.crawl-row { cursor: pointer; }
+.crawl-row td:first-child { white-space: nowrap; }
+.chev { display: inline-block; width: 14px; color: var(--text-muted); transition: transform .15s; }
+.crawl-row.open .chev { transform: rotate(90deg); }
+.delta-up { color: var(--good-ink); }
+.delta-down { color: var(--critical); }
+.muted { color: var(--text-muted); }
+.status-ok { color: var(--good-ink); font-weight: 600; }
+.status-err { color: var(--critical); font-weight: 600; }
+.detail td { background: var(--surface-2); padding: 14px 16px 18px; }
+.detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.detail h4 { margin: 0 0 8px; font-size: 12.5px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.detail ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.detail li { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 13px; }
+.detail li .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.detail li .reason { color: var(--text-muted); font-size: 12px; }
+.detail .q { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 11.5px; color: var(--text-secondary); }
+.detail .facts { display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--text-secondary); font-size: 12.5px; margin-bottom: 14px; }
+
+.toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 40; background: var(--text-primary);
+  color: var(--surface-1); padding: 8px 14px; border-radius: 8px; font-size: 13px;
+}
+#runs-table { min-width: 560px; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font-size: 12px; font-weight: 600; color: var(--text-secondary); background: var(--surface-2); position: sticky; top: 0; white-space: nowrap; }
+th.sortable { cursor: pointer; user-select: none; }
+th.sortable:hover { color: var(--text-primary); }
+th .arrow { color: var(--accent); margin-left: 4px; }
+td.r, th.r { text-align: right; }
+tbody tr:hover { background: var(--surface-2); }
+.repo-name { font-weight: 600; word-break: break-word; }
+.desc { color: var(--text-secondary); margin-top: 2px; max-width: 460px; word-break: break-word; }
+.tag { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 11.5px; border: 1px solid var(--border); color: var(--text-secondary); margin: 0 4px 4px 0; white-space: nowrap; }
+.tag.iitp { background: var(--accent-soft); border-color: transparent; color: var(--text-primary); font-weight: 600; }
+.tag.new { background: var(--good-soft); border-color: transparent; color: var(--good-ink); font-weight: 600; }
+.nowrap { white-space: nowrap; }
+.pager { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 16px; color: var(--text-secondary); font-size: 13px; flex-wrap: wrap; }
+.pager .btns { display: flex; gap: 6px; }
+.pager .btn { height: 32px; }
+.pager .btn:disabled { opacity: .45; cursor: default; }
+.section-gap { margin-top: 12px; }
+
+@media (max-width: 1000px) {
+  .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .charts { grid-template-columns: 1fr 1fr; }
+  .charts .wide { grid-column: 1 / -1; }
+}
+@media (max-width: 640px) {
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .charts { grid-template-columns: 1fr; }
+  .kpi .value { font-size: 24px; }
+  .desc { max-width: 260px; }
+}
+</style>
+</head>
+<body>
+
+<section id="login">
+  <form class="login-card" id="login-form" method="post" action="#" autocomplete="on">
+    <h1>Sign in</h1>
+    <p>Enter your credentials to open the dashboard.</p>
+    <div class="field">
+      <label for="u">Username</label>
+      <input class="input" id="u" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required autofocus>
+    </div>
+    <div class="field">
+      <label for="p">Password</label>
+      <input class="input" id="p" name="password" type="password" autocomplete="current-password" required>
+    </div>
+    <div class="error" id="login-error" role="alert"></div>
+    <button class="btn btn-primary" id="login-btn" type="submit">Sign in</button>
+  </form>
+</section>
+
+<main id="app" class="hidden">
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1 id="title">Dashboard</h1>
+        <div class="sub" id="status"></div>
+      </div>
+      <div class="top-actions">
+        <span class="sub" style="align-self:center">Signed in as <strong id="whoami"></strong></span>
+        <button class="btn" id="theme-btn" type="button" aria-label="Toggle theme">Theme</button>
+        <button class="btn" id="logout-btn" type="button">Log out</button>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist">
+      <button type="button" role="tab" data-view="repos" aria-selected="true">Repositories<span class="count" id="tab-repos-n"></span></button>
+      <button type="button" role="tab" data-view="crawls" aria-selected="false">Crawls<span class="count" id="tab-crawls-n"></span></button>
+    </nav>
+
+    <div id="view-repos">
+    <div class="kpis" id="kpis"></div>
+
+    <div class="charts">
+      <div class="card wide">
+        <div class="card-h"><h2>Repositories created per day</h2><div class="sub">Last 45 days, all matched repos</div></div>
+        <div class="chart" id="chart-days"></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h2>Top languages</h2><div class="sub">Repos per primary language</div></div>
+        <div id="chart-lang"></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h2>Matched keywords</h2><div class="sub">Repos mentioning each keyword</div></div>
+        <div id="chart-kw"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="filters">
+        <input class="input search" id="q" type="search" placeholder="Search name, owner, description, topics…">
+        <div class="seg" id="cat-seg" role="group" aria-label="Category"></div>
+        <select class="input" id="lang-f" aria-label="Language"></select>
+        <select class="input" id="kw-f" aria-label="Keyword"></select>
+        <label class="chk"><input type="checkbox" id="new-f"> New in 24h</label>
+        <button class="btn" id="export-btn" type="button">Export CSV</button>
+      </div>
+      <div class="table-wrap">
+        <table id="tbody-table">
+          <thead><tr id="thead"></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <span id="page-info"></span>
+        <div class="btns">
+          <button class="btn" id="prev" type="button">Previous</button>
+          <button class="btn" id="next" type="button">Next</button>
+        </div>
+      </div>
+    </div>
+
+    </div>
+
+    <div id="view-crawls" class="hidden">
+      <div class="kpis" id="crawl-kpis"></div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-h"><h2>Repositories tracked after each crawl</h2><div class="sub" id="crawl-chart-sub"></div></div>
+        <div class="chart" id="chart-crawls"></div>
+      </div>
+      <div class="card">
+        <div class="filters">
+          <div class="seg" id="crawl-mode" role="group" aria-label="Crawl type">
+            <button type="button" data-v="all" aria-pressed="true">All</button>
+            <button type="button" data-v="full" aria-pressed="false">Full sweeps</button>
+            <button type="button" data-v="incremental" aria-pressed="false">Incremental</button>
+          </div>
+          <label class="chk"><input type="checkbox" id="crawl-changes"> Only crawls with changes</label>
+          <span class="sub" id="crawl-sub" style="margin-left:auto"></span>
+        </div>
+        <div class="table-wrap">
+          <table id="crawls-table">
+            <thead><tr>
+              <th>Finished</th><th>Type</th><th class="r">Duration</th><th class="r">Searches</th><th class="r">Candidates</th>
+              <th class="r">New</th><th class="r">Updated</th><th class="r">Removed</th><th class="r">Rejected</th>
+              <th class="r">Total</th><th>Status</th>
+            </tr></thead>
+            <tbody id="crawls"></tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <span id="crawl-page-info"></span>
+          <div class="btns">
+            <button class="btn" id="crawl-prev" type="button">Newer</button>
+            <button class="btn" id="crawl-next" type="button">Older</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="tooltip hidden" id="tip"></div>
+<div class="menu hidden" id="clone-menu" role="menu"></div>
+<div class="scrim hidden" id="scrim"></div>
+<aside class="drawer hidden" id="drawer" aria-label="Repository preview">
+  <div class="drawer-h">
+    <div class="row">
+      <h3 id="pv-title"></h3>
+      <button class="btn btn-sm" id="pv-close" type="button" aria-label="Close preview">Close</button>
+    </div>
+    <div class="desc" id="pv-desc" style="max-width:none"></div>
+    <div class="meta" id="pv-meta"></div>
+    <div class="acts">
+      <a class="btn btn-sm btn-accent" id="pv-open" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center">Open on GitHub</a>
+      <button class="btn btn-sm" id="pv-clone" type="button">Clone ▾</button>
+    </div>
+  </div>
+  <div class="drawer-body" id="pv-body"></div>
+</aside>
+<div class="toast hidden" id="toast" role="status"></div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const SESSION_KEY = "dash.cred";
+  const PAGE = 25;
+  const REFRESH_MS = 5 * 60 * 1000;
+  let cred = null, data = null, keyCache = {};
+  const st = { q: "", cat: "all", lang: "", kw: "", onlyNew: false, sort: "first_seen", dir: -1, page: 0 };
+
+  const store = {
+    get(k, s) { try { return (s || localStorage).getItem(k); } catch { return null; } },
+    set(k, v, s) { try { (s || localStorage).setItem(k, v); } catch {} },
+    del(k, s) { try { (s || localStorage).removeItem(k); } catch {} },
+  };
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const safeUrl = (u) => /^https:\/\/github\.com\//.test(u || "") ? u : "#";
+  const b64d = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+  const fmtDate = (s) => s ? new Date(s).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "";
+  const fmtDT = (s) => s ? new Date(s).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+  function ago(s) {
+    if (!s) return "never";
+    const m = Math.round((Date.now() - new Date(s)) / 60000);
+    if (m < 1) return "just now";
+    if (m < 60) return `${m} min ago`;
+    const h = Math.round(m / 60);
+    return h < 48 ? `${h} h ago` : `${Math.round(h / 24)} days ago`;
+  }
+
+  // ---- crypto ----
+  // Must match slot_id() in publish_site.py.
+  async function slotId(user) {
+    const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`hz-dashboard:${user}`));
+    return [...new Uint8Array(h)].map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 32);
+  }
+
+  // data.enc: payload encrypted with a random data key, which is wrapped once
+  // per user with a PBKDF2 key from "username:password".
+  async function decrypt(user, pass) {
+    user = user.trim().toLowerCase();
+    const res = await fetch(`data.enc?t=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) throw new Error("fetch");
+    const env = await res.json();
+    const slot = env.slots[await slotId(user)];
+    if (!slot) throw new Error("auth");
+    const ck = `${slot.salt}|${user}|${pass}`;
+    let key = keyCache[ck];
+    if (!key) {
+      const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(`${user}:${pass}`), "PBKDF2", false, ["deriveKey"]);
+      const kek = await crypto.subtle.deriveKey({ name: "PBKDF2", salt: b64d(slot.salt), iterations: env.iter, hash: "SHA-256" },
+        base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+      const raw = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64d(slot.iv) }, kek, b64d(slot.k));
+      key = await crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["decrypt"]);
+      keyCache = { [ck]: key };
+    }
+    const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64d(env.iv) }, key, b64d(env.ct));
+    return JSON.parse(new TextDecoder().decode(plain));
+  }
+
+  async function signIn(user, pass, silent) {
+    try {
+      data = await decrypt(user, pass);
+    } catch (e) {
+      if (!silent) $("login-error").textContent = e.message === "fetch" ? "Could not load data. Try again shortly." : "Invalid username or password.";
+      return false;
+    }
+    cred = { user, pass };
+    store.set(SESSION_KEY, JSON.stringify(cred), sessionStorage);
+    $("whoami").textContent = user.trim().toLowerCase();
+    // Tell the browser the login succeeded so Chrome offers "Save password"
+    // (to Google Password Manager); its heuristics alone miss single-page logins.
+    if (!silent && window.PasswordCredential && navigator.credentials) {
+      try { await navigator.credentials.store(new PasswordCredential({ id: user.trim().toLowerCase(), password: pass })); } catch {}
+    }
+    $("login").classList.add("hidden");
+    $("app").classList.remove("hidden");
+    buildFilters();
+    render();
+    return true;
+  }
+
+  $("login-form").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const btn = $("login-btn");
+    btn.disabled = true; btn.textContent = "Signing in…"; $("login-error").textContent = "";
+    await signIn($("u").value.trim(), $("p").value, false);
+    btn.disabled = false; btn.textContent = "Sign in";
+  });
+  $("logout-btn").addEventListener("click", () => {
+    store.del(SESSION_KEY, sessionStorage);
+    cred = null; data = null; keyCache = {};
+    closeMenu(); closePreview();
+    $("app").classList.add("hidden"); $("login").classList.remove("hidden");
+    $("p").value = ""; $("p").focus();
+  });
+
+  // ---- theme ----
+  const savedTheme = store.get("dash.theme");
+  if (savedTheme) document.documentElement.dataset.theme = savedTheme;
+  $("theme-btn").addEventListener("click", () => {
+    const cur = document.documentElement.dataset.theme ||
+      (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const next = cur === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    store.set("dash.theme", next);
+  });
+
+  // ---- data helpers ----
+  const kwList = (r) => (r.matched_keywords || "").split(";").filter(Boolean);
+  const isNew = (r) => r.first_seen && Date.now() - new Date(r.first_seen) < 864e5;
+  const label = (c) => (data.labels && data.labels[c]) || c;
+
+  function filtered() {
+    const q = st.q.toLowerCase();
+    let rows = data.rows.filter((r) =>
+      (st.cat === "all" || r.category === st.cat) &&
+      (!st.lang || (r.language || "—") === st.lang) &&
+      (!st.kw || kwList(r).includes(st.kw)) &&
+      (!st.onlyNew || isNew(r)) &&
+      (!q || [r.full_name, r.description, r.topics, r.owner].join(" ").toLowerCase().includes(q)));
+    const k = st.sort, numeric = ["stars", "forks"].includes(k);
+    rows.sort((a, b) => {
+      const x = numeric ? +a[k] || 0 : (a[k] || "").toLowerCase();
+      const y = numeric ? +b[k] || 0 : (b[k] || "").toLowerCase();
+      return (x < y ? -1 : x > y ? 1 : 0) * st.dir;
+    });
+    return rows;
+  }
+
+  function counts(rows, fn) {
+    const m = new Map();
+    rows.forEach((r) => [].concat(fn(r)).forEach((k) => m.set(k, (m.get(k) || 0) + 1)));
+    return [...m.entries()].sort((a, b) => b[1] - a[1]);
+  }
+
+  // ---- filters ----
+  function buildFilters() {
+    const cats = [["all", "All"], ...Object.keys(data.labels || {}).map((c) => [c, label(c)])];
+    $("cat-seg").innerHTML = cats.map(([v, l]) =>
+      `<button type="button" data-v="${esc(v)}" aria-pressed="${st.cat === v}">${esc(l)}</button>`).join("");
+    const langs = counts(data.rows, (r) => r.language || "—");
+    $("lang-f").innerHTML = `<option value="">All languages</option>` +
+      langs.map(([l, n]) => `<option value="${esc(l)}"${st.lang === l ? " selected" : ""}>${esc(l)} (${n})</option>`).join("");
+    const kws = counts(data.rows, kwList);
+    $("kw-f").innerHTML = `<option value="">All keywords</option>` +
+      kws.map(([k, n]) => `<option value="${esc(k)}"${st.kw === k ? " selected" : ""}>${esc(k)} (${n})</option>`).join("");
+  }
+  $("cat-seg").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    st.cat = b.dataset.v; st.page = 0;
+    [...$("cat-seg").children].forEach((x) => x.setAttribute("aria-pressed", x === b));
+    renderTable();
+  });
+  $("q").addEventListener("input", (e) => { st.q = e.target.value; st.page = 0; renderTable(); });
+  $("lang-f").addEventListener("change", (e) => { st.lang = e.target.value; st.page = 0; renderTable(); });
+  $("kw-f").addEventListener("change", (e) => { st.kw = e.target.value; st.page = 0; renderTable(); });
+  $("new-f").addEventListener("change", (e) => { st.onlyNew = e.target.checked; st.page = 0; renderTable(); });
+  $("prev").addEventListener("click", () => { st.page--; renderTable(); });
+  $("next").addEventListener("click", () => { st.page++; renderTable(); });
+
+  // ---- render ----
+  function render() {
+    $("title").textContent = data.title || "Dashboard";
+    document.title = data.title || "Repo Dashboard";
+    renderStatus();
+    renderKpis(data.rows);
+    renderDays(data.rows);
+    renderHBars($("chart-lang"), counts(data.rows, (r) => r.language || "—"), 8);
+    renderHBars($("chart-kw"), counts(data.rows, kwList), 8);
+    renderTable();
+    renderRuns();
+  }
+
+  function renderStatus() {
+    const stale = data.last_run && Date.now() - new Date(data.last_run) > 3 * (data.schedule_minutes || 60) * 60000;
+    $("status").innerHTML = `<span class="dot${stale ? " stale" : ""}"></span>Last crawl ${esc(ago(data.last_run))}` +
+      (data.last_run ? ` · ${esc(fmtDT(data.last_run))}` : "") + ` · runs every ${data.schedule_minutes || 60} min`;
+  }
+
+  function renderKpis(rows) {
+    const day = 864e5, now = Date.now();
+    const n24 = rows.filter((r) => now - new Date(r.first_seen) < day).length;
+    const n7 = rows.filter((r) => now - new Date(r.first_seen) < 7 * day).length;
+    const iitp = rows.filter((r) => r.category === "iitp").length;
+    const kpis = [
+      ["Total repositories", rows.length, `${data.rejected_count || 0} checked & rejected`],
+      [label("iitp"), iitp, rows.length ? `${Math.round(iitp / rows.length * 100)}% of total` : ""],
+      [label("iits"), rows.length - iitp, rows.length ? `${Math.round((rows.length - iitp) / rows.length * 100)}% of total` : ""],
+      ["New in last 24 h", n24, "by first seen"],
+      ["New in last 7 days", n7, "by first seen"],
+    ];
+    $("kpis").innerHTML = kpis.map(([l, v, h]) =>
+      `<div class="card kpi"><div class="label">${esc(l)}</div><div class="value num">${v.toLocaleString()}</div><div class="hint">${esc(h)}</div></div>`).join("");
+  }
+
+  function renderDays(rows) {
+    const N = 45, days = [];
+    const start = new Date(); start.setHours(0, 0, 0, 0); start.setDate(start.getDate() - (N - 1));
+    for (let i = 0; i < N; i++) { const d = new Date(start); d.setDate(start.getDate() + i); days.push({ d, n: 0 }); }
+    rows.forEach((r) => {
+      const c = new Date(r.created_at); c.setHours(0, 0, 0, 0);
+      const i = Math.round((c - start) / 864e5);
+      if (i >= 0 && i < N) days[i].n++;
+    });
+    const short = (d) => d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    $("chart-days").innerHTML = barChart(days.map((x, i) => ({
+      v: x.n, tip: `${short(x.d)}: ${x.n} repo${x.n === 1 ? "" : "s"}`,
+      label: i % 7 === 0 || (i === N - 1 && i % 7 > 3) ? short(x.d) : "",
+    })), "Repositories created per day");
+  }
+
+  // Single-series bar chart: items = [{v, tip, label}], label "" = no x tick.
+  function barChart(items, aria, H = 200, W = 720) {
+    const N = Math.max(items.length, 1);
+    const max = Math.max(1, ...items.map((x) => x.v));
+    const step = max <= 4 ? 1 : Math.ceil(max / 4);
+    const top = Math.ceil(max / step) * step;
+    const L = 34, B = 22, T = 8, pw = W - L, ph = H - B - T, bw = pw / N, gap = Math.min(2, bw / 4);
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(aria)}">`;
+    for (let v = 0; v <= top; v += step) {
+      const y = T + ph - (v / top) * ph;
+      svg += `<line class="${v ? "gridline" : "baseline"}" x1="${L}" x2="${W}" y1="${y}" y2="${y}"/><text x="${L - 6}" y="${y + 4}" text-anchor="end">${v}</text>`;
+    }
+    items.forEach((x, i) => {
+      const h = (x.v / top) * ph, xx = L + i * bw + gap / 2, w = Math.max(1, bw - gap), y = T + ph - h;
+      const r = Math.min(4, w / 2, h);
+      const path = h > 0 ? `M${xx},${T + ph} V${y + r} Q${xx},${y} ${xx + r},${y} H${xx + w - r} Q${xx + w},${y} ${xx + w},${y + r} V${T + ph} Z` : "";
+      svg += `<rect class="hit" x="${L + i * bw}" y="${T}" width="${bw}" height="${ph}" fill="transparent" data-tip="${esc(x.tip)}"/>`;
+      if (path) svg += `<path class="bar" d="${path}" pointer-events="none"/>`;
+      if (x.label) svg += `<text x="${xx + w / 2}" y="${H - 6}" text-anchor="middle">${esc(x.label)}</text>`;
+    });
+    return svg + "</svg>";
+  }
+
+  function renderHBars(el, pairs, limit) {
+    if (!pairs.length) { el.innerHTML = `<div class="empty">No data yet</div>`; return; }
+    let shown = pairs.slice(0, limit);
+    const rest = pairs.slice(limit).reduce((s, p) => s + p[1], 0);
+    if (rest) shown = [...shown, ["Other", rest]];
+    const max = Math.max(...shown.map((p) => p[1]));
+    el.innerHTML = `<div class="hbars">` + shown.map(([k, n]) =>
+      `<div class="hbar" data-tip="${esc(k)}: ${n} repo${n === 1 ? "" : "s"}"><span class="name" title="${esc(k)}">${esc(k)}</span>` +
+      `<div class="track"><div class="fill" style="width:${(n / max * 100).toFixed(1)}%"></div></div><span class="val num">${n}</span></div>`).join("") + `</div>`;
+  }
+
+  const COLS = [
+    ["_actions", "", "", true], ["full_name", "Repository"], ["category", "Category"], ["language", "Language"], ["stars", "Stars", "r"],
+    ["matched_keywords", "Keywords", "", true], ["created_at", "Created"], ["pushed_at", "Last push"], ["first_seen", "First seen"],
+  ];
+  function renderTable() {
+    $("thead").innerHTML = COLS.map(([k, l, cls, nosort]) =>
+      `<th class="${cls || ""}${nosort ? "" : " sortable"}" data-k="${k}">${esc(l)}${st.sort === k ? `<span class="arrow">${st.dir > 0 ? "↑" : "↓"}</span>` : ""}</th>`).join("");
+    const rows = filtered();
+    const pages = Math.max(1, Math.ceil(rows.length / PAGE));
+    st.page = Math.min(Math.max(0, st.page), pages - 1);
+    const slice = rows.slice(st.page * PAGE, st.page * PAGE + PAGE);
+    $("tbody").innerHTML = slice.length ? slice.map((r) => `<tr>
+      <td><div class="row-actions">
+        <button class="btn btn-sm" type="button" data-act="preview" data-repo="${esc(r.full_name)}">Preview</button>
+        <button class="btn btn-sm btn-accent" type="button" data-act="clone" data-repo="${esc(r.full_name)}">Clone ▾</button>
+      </div></td>
+      <td><a class="repo-name" href="${esc(safeUrl(r.url))}" target="_blank" rel="noopener noreferrer">${esc(r.full_name)}</a>
+        ${isNew(r) ? `<span class="tag new">New</span>` : ""}
+        ${r.description ? `<div class="desc">${esc(r.description)}</div>` : ""}</td>
+      <td><span class="tag ${r.category === "iitp" ? "iitp" : ""}">${esc(label(r.category))}</span></td>
+      <td class="nowrap">${esc(r.language || "—")}</td>
+      <td class="r num">${esc(r.stars)}</td>
+      <td>${kwList(r).map((k) => `<span class="tag">${esc(k)}</span>`).join("")}</td>
+      <td class="nowrap">${esc(fmtDate(r.created_at))}</td>
+      <td class="nowrap">${esc(fmtDate(r.pushed_at))}</td>
+      <td class="nowrap">${esc(fmtDT(r.first_seen))}</td>
+    </tr>`).join("") : `<tr><td colspan="${COLS.length}" class="empty">No repositories match these filters</td></tr>`;
+    const from = rows.length ? st.page * PAGE + 1 : 0;
+    $("page-info").textContent = `${from}–${Math.min(rows.length, (st.page + 1) * PAGE)} of ${rows.length.toLocaleString()} repositories`;
+    $("prev").disabled = st.page === 0;
+    $("next").disabled = st.page >= pages - 1;
+  }
+  $("thead").addEventListener("click", (e) => {
+    const th = e.target.closest("th.sortable"); if (!th) return;
+    const k = th.dataset.k;
+    if (st.sort === k) st.dir *= -1; else { st.sort = k; st.dir = ["full_name", "category", "language"].includes(k) ? 1 : -1; }
+    renderTable();
+  });
+
+  // ---- tabs ----
+  function showView(v) {
+    document.querySelectorAll(".tabs button").forEach((b) => b.setAttribute("aria-selected", b.dataset.view === v));
+    $("view-repos").classList.toggle("hidden", v !== "repos");
+    $("view-crawls").classList.toggle("hidden", v !== "crawls");
+    store.set("dash.view", v);
+  }
+  document.querySelector(".tabs").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-view]"); if (b) showView(b.dataset.view);
+  });
+  showView(store.get("dash.view") === "crawls" ? "crawls" : "repos");
+
+  // ---- crawls ----
+  const CPAGE = 20;
+  const cst = { mode: "all", changes: false, page: 0, open: new Set() };
+  const dur = (s) => s == null ? "—" : s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${String(s % 60).padStart(2, "0")}s`;
+  const n = (v) => v == null ? `<span class="muted">—</span>` : esc(v);
+  const changed = (r) => (r.new || 0) + (r.updated || 0) + (r.removed || 0) > 0;
+  const runKey = (r) => r.at;
+
+  function renderRuns() {
+    const runs = data.runs || [];
+    $("tab-repos-n").textContent = data.rows.length.toLocaleString();
+    $("tab-crawls-n").textContent = runs.length.toLocaleString();
+
+    const now = Date.now(), day = runs.filter((r) => now - new Date(r.at) < 864e5);
+    const avg = (xs) => xs.length ? Math.round(xs.reduce((s, r) => s + (r.seconds || 0), 0) / xs.length) : null;
+    const inc = runs.filter((r) => r.mode !== "full");
+    const sched = data.schedule_minutes || 45;
+    const kpis = [
+      ["Crawls recorded", runs.length, runs.length ? `since ${fmtDate(runs[0].at)}` : ""],
+      ["Crawls in last 24 h", day.length, `expected ~${Math.round(1440 / sched)} at ${sched} min`],
+      ["Avg duration", dur(avg(inc.slice(-50))), "incremental crawls (last 50)"],
+      ["Repos found in 24 h", day.reduce((s, r) => s + (r.new || 0), 0), `${day.reduce((s, r) => s + (r.removed || 0), 0)} removed`],
+      ["Last full sweep", data.last_full ? ago(data.last_full) : "—", "re-checks every repo daily"],
+    ];
+    $("crawl-kpis").innerHTML = kpis.map(([l, v, h]) =>
+      `<div class="card kpi"><div class="label">${esc(l)}</div><div class="value num">${esc(typeof v === "number" ? v.toLocaleString() : v)}</div><div class="hint">${esc(h)}</div></div>`).join("");
+
+    const recent = runs.slice(-60);
+    $("crawl-chart-sub").textContent = recent.length ? `Last ${recent.length} crawls, oldest on the left` : "";
+    const every = Math.max(1, Math.ceil(recent.length / 6));
+    $("chart-crawls").innerHTML = recent.length ? barChart(recent.map((r, i) => ({
+      v: r.total || 0,
+      tip: `${fmtDT(r.at)} · ${r.total} repos${r.new ? ` · +${r.new} new` : ""}${r.removed ? ` · −${r.removed} removed` : ""}`,
+      label: i % every === 0 ? new Date(r.at).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "",
+    })), "Repositories tracked after each crawl", 220, 1240) : `<div class="empty">No crawls yet</div>`;
+    $("crawl-sub").textContent = data.last_run ? `Last crawl ${ago(data.last_run)}` : "";
+    renderCrawlTable();
+  }
+
+  function crawlDetail(r) {
+    const repoItem = (x, extra) => VALID_REPO.test(x.repo) ? `<li>
+      <a class="grow" href="${esc(ghUrl(x.repo))}" title="${esc(x.repo)}" target="_blank" rel="noopener noreferrer">${esc(x.repo)}</a>
+      ${x.category ? `<span class="tag ${x.category === "iitp" ? "iitp" : ""}">${esc(label(x.category))}</span>` : ""}
+      ${extra || ""}
+      <button class="btn btn-sm" type="button" data-act="preview" data-repo="${esc(x.repo)}">Preview</button></li>` : "";
+    const list = (title, items, fn, more) => `<div><h4>${esc(title)} (${items.length}${more ? "+" : ""})</h4>${items.length
+      ? `<ul>${items.map(fn).join("")}</ul>` : `<div class="muted">None</div>`}</div>`;
+    const facts = [
+      `Trigger: ${r.trigger === "schedule" ? "scheduled" : r.trigger === "workflow_dispatch" ? "manual" : r.trigger || "—"}`,
+      r.window_from ? `Searched repos pushed since ${fmtDT(r.window_from)}` : r.mode === "full" ? "Searched everything (full sweep)" : "",
+      r.unchanged != null ? `${r.unchanged} unchanged` : "", r.rechecked ? `${r.rechecked} re-checked` : "",
+      r.cached_rejects != null ? `${r.cached_rejects} known rejects skipped` : "",
+      r.total_before != null ? `Total ${r.total_before} → ${r.total}` : "",
+      r.iitp_total != null ? `${r.iitp_total} ${label("iitp")}` : "",
+    ].filter(Boolean);
+    const searches = (r.searches || []).map((s) => `<li><span class="grow q" title="${esc(s.q)}">${esc(s.q)}</span><span class="num">${esc(s.n)}</span></li>`);
+    return `<div class="facts">${facts.map((f) => `<span>${esc(f)}</span>`).join("")}
+        ${r.run_url && /^https:\/\/github\.com\//.test(r.run_url) ? `<a href="${esc(r.run_url)}" target="_blank" rel="noopener noreferrer">View GitHub Actions log</a>` : ""}</div>
+      ${(r.errors || []).length ? `<div class="status-err" style="margin-bottom:12px">${r.errors.map(esc).join("<br>")}</div>` : ""}
+      <div class="detail-grid">
+        ${list("New repositories", r.new_repos || [], (x) => repoItem(x, `<span class="tag new">New</span>`), (r.new || 0) > (r.new_repos || []).length)}
+        ${list("Updated (new pushes)", r.updated_repos || [], (x) => repoItem(x), (r.updated || 0) > (r.updated_repos || []).length)}
+        ${list("Removed", r.removed_repos || [], (x) => repoItem(x, `<span class="reason">${esc(x.reason)}</span>`), false)}
+        <div><h4>Searches (${searches.length})</h4>${searches.length ? `<ul>${searches.join("")}</ul>` : `<div class="muted">Not recorded for this crawl</div>`}</div>
+      </div>`;
+  }
+
+  function renderCrawlTable() {
+    let runs = (data.runs || []).slice().reverse()
+      .filter((r) => (cst.mode === "all" || (cst.mode === "full") === (r.mode === "full")) && (!cst.changes || changed(r)));
+    const pages = Math.max(1, Math.ceil(runs.length / CPAGE));
+    cst.page = Math.min(Math.max(0, cst.page), pages - 1);
+    const slice = runs.slice(cst.page * CPAGE, cst.page * CPAGE + CPAGE);
+    $("crawls").innerHTML = slice.length ? slice.map((r) => {
+      const open = cst.open.has(runKey(r));
+      const delta = r.total_before != null ? r.total - r.total_before : null;
+      const err = (r.errors || []).length;
+      return `<tr class="crawl-row${open ? " open" : ""}" data-key="${esc(runKey(r))}" aria-expanded="${open}">
+        <td><span class="chev">▸</span>${esc(fmtDT(r.at))} <span class="muted">· ${esc(ago(r.at))}</span></td>
+        <td>${esc(r.mode === "full" ? "Full sweep" : "Incremental")}</td>
+        <td class="r num">${dur(r.seconds)}</td>
+        <td class="r num">${r.searches ? r.searches.length : n(null)}</td>
+        <td class="r num">${n(r.candidates)}</td>
+        <td class="r num">${r.new ? `<span class="delta-up">+${r.new}</span>` : n(r.new)}</td>
+        <td class="r num">${n(r.updated)}</td>
+        <td class="r num">${r.removed ? `<span class="delta-down">−${r.removed}</span>` : n(r.removed)}</td>
+        <td class="r num">${n(r.rejected)}</td>
+        <td class="r num">${n(r.total)}${delta ? ` <span class="${delta > 0 ? "delta-up" : "delta-down"}">(${delta > 0 ? "+" : "−"}${Math.abs(delta)})</span>` : ""}</td>
+        <td>${err ? `<span class="status-err">⚠ ${err} error${err > 1 ? "s" : ""}</span>` : `<span class="status-ok">✓ OK</span>`}</td>
+      </tr>${open ? `<tr class="detail"><td colspan="11">${crawlDetail(r)}</td></tr>` : ""}`;
+    }).join("") : `<tr><td colspan="11" class="empty">No crawls match these filters</td></tr>`;
+    const from = runs.length ? cst.page * CPAGE + 1 : 0;
+    $("crawl-page-info").textContent = `${from}–${Math.min(runs.length, (cst.page + 1) * CPAGE)} of ${runs.length.toLocaleString()} crawls`;
+    $("crawl-prev").disabled = cst.page === 0;
+    $("crawl-next").disabled = cst.page >= pages - 1;
+  }
+
+  $("crawls").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-act='preview']");
+    if (b) { openPreview(b.dataset.repo); return; }
+    if (e.target.closest("a")) return;
+    const row = e.target.closest(".crawl-row"); if (!row) return;
+    const k = row.dataset.key;
+    cst.open.has(k) ? cst.open.delete(k) : cst.open.add(k);
+    renderCrawlTable();
+  });
+  $("crawl-mode").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    cst.mode = b.dataset.v; cst.page = 0;
+    [...$("crawl-mode").children].forEach((x) => x.setAttribute("aria-pressed", x === b));
+    renderCrawlTable();
+  });
+  $("crawl-changes").addEventListener("change", (e) => { cst.changes = e.target.checked; cst.page = 0; renderCrawlTable(); });
+  $("crawl-prev").addEventListener("click", () => { cst.page--; renderCrawlTable(); });
+  $("crawl-next").addEventListener("click", () => { cst.page++; renderCrawlTable(); });
+
+  // ---- preview & clone ----
+  const VALID_REPO = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
+  const findRow = (name) => data.rows.find((r) => r.full_name === name);
+  const ghUrl = (name) => `https://github.com/${name}`;
+
+  function toast(msg) {
+    const t = $("toast");
+    t.textContent = msg; t.classList.remove("hidden");
+    clearTimeout(toast.timer); toast.timer = setTimeout(() => t.classList.add("hidden"), 2200);
+  }
+
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; }
+    catch {
+      const ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      const ok = document.execCommand("copy"); ta.remove(); return ok;
+    }
+  }
+
+  function openCloneMenu(name, anchor) {
+    if (!VALID_REPO.test(name)) return;
+    const row = findRow(name) || {};
+    const url = ghUrl(name);
+    const branch = row.default_branch || "HEAD";
+    const m = $("clone-menu");
+    m.innerHTML = `
+      <a role="menuitem" href="x-github-client://openRepo/${esc(url)}">Open in GitHub Desktop<span class="hint">Clones in one click (needs GitHub Desktop)</span></a>
+      <a role="menuitem" href="${esc(url)}/archive/refs/heads/${esc(encodeURIComponent(branch))}.zip" download>Download ZIP<span class="hint">Full source of ${esc(branch)}</span></a>
+      <button role="menuitem" type="button" data-copy="git clone ${esc(url)}.git">Copy git clone command<span class="hint">Paste into your terminal</span></button>
+      <code>git clone ${esc(url)}.git</code>`;
+    m.classList.remove("hidden");
+    const r = anchor.getBoundingClientRect();
+    const w = m.offsetWidth, h = m.offsetHeight;
+    m.style.left = `${Math.max(8, Math.min(r.left, innerWidth - w - 8))}px`;
+    m.style.top = `${r.bottom + 6 + h > innerHeight ? Math.max(8, r.top - h - 6) : r.bottom + 6}px`;
+  }
+  const closeMenu = () => $("clone-menu").classList.add("hidden");
+  $("clone-menu").addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-copy]");
+    if (b) toast(await copyText(b.dataset.copy) ? "Clone command copied" : "Copy failed");
+    closeMenu();
+  });
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest("#clone-menu") && !e.target.closest("[data-act='clone']") && e.target.id !== "pv-clone") closeMenu();
+  });
+
+  function readmeDoc(html, name) {
+    const cs = getComputedStyle(document.documentElement);
+    const v = (k) => cs.getPropertyValue(k).trim();
+    return `<!doctype html><html><head><meta charset="utf-8">
+      <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https: data:; style-src 'unsafe-inline'; media-src https:">
+      <base href="${esc(ghUrl(name))}/blob/HEAD/" target="_blank">
+      <style>
+        body { margin: 0; padding: 20px 24px 40px; font: 14px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+               color: ${v("--text-primary")}; background: ${v("--surface-1")}; word-wrap: break-word; }
+        a { color: ${v("--accent-ink")}; }
+        img { max-width: 100%; height: auto; }
+        pre, code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 12.5px; background: ${v("--surface-2")}; border-radius: 6px; }
+        code { padding: 1px 5px; } pre { padding: 12px; overflow: auto; } pre code { padding: 0; background: none; }
+        table { border-collapse: collapse; display: block; overflow: auto; } th, td { border: 1px solid ${v("--border")}; padding: 6px 10px; }
+        h1, h2 { border-bottom: 1px solid ${v("--border")}; padding-bottom: .3em; }
+        blockquote { margin: 0; padding: 0 1em; color: ${v("--text-secondary")}; border-left: 3px solid ${v("--border")}; }
+        hr { border: 0; border-top: 1px solid ${v("--border")}; }
+      </style></head><body>${html}</body></html>`;
+  }
+
+  async function openPreview(name) {
+    if (!VALID_REPO.test(name)) return;
+    closeMenu();
+    const r = findRow(name) || { full_name: name };
+    $("pv-title").textContent = name;
+    $("pv-desc").textContent = r.description || "";
+    $("pv-meta").innerHTML = [
+      label(r.category), r.language, r.stars !== undefined && `★ ${r.stars}`, r.forks !== undefined && `${r.forks} forks`,
+      r.created_at && `Created ${fmtDate(r.created_at)}`, r.pushed_at && `Last push ${fmtDate(r.pushed_at)}`,
+    ].filter(Boolean).map((x) => `<span>${esc(x)}</span>`).join("");
+    $("pv-open").href = ghUrl(name);
+    $("pv-clone").dataset.repo = name;
+    $("pv-body").innerHTML = `<div class="empty">Loading README…</div>`;
+    $("scrim").classList.remove("hidden"); $("drawer").classList.remove("hidden");
+    try {
+      const res = await fetch(`https://api.github.com/repos/${name}/readme`, { headers: { Accept: "application/vnd.github.html" } });
+      if ($("pv-title").textContent !== name) return;  // another preview was opened meanwhile
+      if (res.status === 404) throw new Error("This repository has no README.");
+      if (!res.ok) throw new Error(res.status === 403 ? "GitHub preview limit reached for now (60/hour)." : "Could not load the README.");
+      const frame = document.createElement("iframe");
+      frame.setAttribute("sandbox", "allow-popups allow-popups-to-escape-sandbox");
+      frame.setAttribute("referrerpolicy", "no-referrer");
+      frame.title = `README of ${name}`;
+      frame.srcdoc = readmeDoc(await res.text(), name);
+      $("pv-body").replaceChildren(frame);
+    } catch (e) {
+      $("pv-body").innerHTML = `<div class="empty"><div>${esc(e.message)}<br><a href="${esc(ghUrl(name))}" target="_blank" rel="noopener noreferrer">Open it on GitHub</a></div></div>`;
+    }
+  }
+  function closePreview() {
+    $("scrim").classList.add("hidden"); $("drawer").classList.add("hidden");
+    $("pv-body").innerHTML = ""; $("pv-title").textContent = "";
+  }
+  $("pv-close").addEventListener("click", closePreview);
+  $("scrim").addEventListener("click", closePreview);
+  $("pv-clone").addEventListener("click", (e) => openCloneMenu(e.currentTarget.dataset.repo, e.currentTarget));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeMenu(); closePreview(); } });
+  $("tbody").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-act]"); if (!b) return;
+    if (b.dataset.act === "preview") openPreview(b.dataset.repo);
+    else openCloneMenu(b.dataset.repo, b);
+  });
+
+  // ---- export ----
+  $("export-btn").addEventListener("click", () => {
+    const rows = filtered();
+    const cols = Object.keys(data.rows[0] || {});
+    const cell = (v) => /[",\n]/.test(v ?? "") ? `"${String(v).replace(/"/g, '""')}"` : (v ?? "");
+    const csv = [cols.join(","), ...rows.map((r) => cols.map((c) => cell(r[c])).join(","))].join("\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    a.download = `repos-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+
+  // ---- tooltip ----
+  const tip = $("tip");
+  document.addEventListener("mousemove", (e) => {
+    const t = e.target.closest && e.target.closest("[data-tip]");
+    if (!t || $("app").classList.contains("hidden")) { tip.classList.add("hidden"); return; }
+    tip.textContent = t.dataset.tip;
+    tip.style.left = `${e.clientX}px`; tip.style.top = `${e.clientY}px`;
+    tip.classList.remove("hidden");
+  });
+
+  // ---- live refresh ----
+  setInterval(async () => {
+    if (!cred) return;
+    try { data = await decrypt(cred.user, cred.pass); buildFilters(); render(); } catch {}
+  }, REFRESH_MS);
+  setInterval(() => { if (data) renderStatus(); }, 60000);
+
+  // ---- restore session ----
+  const saved = store.get(SESSION_KEY, sessionStorage);
+  if (saved) {
+    try { const c = JSON.parse(saved); signIn(c.user, c.pass, true); } catch {}
+  }
+})();
+</script>
+</body>
+</html>
